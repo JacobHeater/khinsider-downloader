@@ -1,0 +1,34 @@
+{
+  "name": "khinsider-downloader",
+  "version": "1.0.0",
+  "description": "A utility for downloading media from khinsider.",
+  "main": "bin/index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "khinsider",
+    "soundtracks",
+    "downloader",
+    "music",
+    "media"
+  ],
+  "author": "Jacob Heater <jacobheater@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/download": "^8.0.1",
+    "@types/fs-extra": "^9.0.12",
+    "@types/jsdom": "^16.2.13",
+    "@types/node": "^16.9.0",
+    "@types/yargs": "^17.0.2",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "axios": "^0.21.4",
+    "download": "^8.0.0",
+    "fs-extra": "^10.0.0",
+    "jsdom": "^17.0.0",
+    "ts-node": "^10.2.1",
+    "yargs": "^17.1.1"
+  }
+}
