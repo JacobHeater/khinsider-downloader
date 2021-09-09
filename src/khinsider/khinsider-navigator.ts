@@ -5,6 +5,7 @@ import { HtmlDomParser } from '../http/html-dom-parser';
 import { FileWriter } from '../io/file-writer';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
+import { FileReader } from '../io/file-reader';
 
 const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
@@ -23,7 +24,8 @@ export class KhInsiderNavigator {
   }
 
   private readonly downloadUrl: string;
-  private readonly fileWriter: FileWriter = new FileWriter(join(homedir(), 'Downloads', 'test'));
+  private readonly fileWriter = new FileWriter(join(homedir(), 'Downloads', 'test'));
+  private readonly fileReader = new FileReader(join(homedir(), 'Downloads', 'test'));
 
   /**
    * Downloads the album asynchronously from KHInsider.
@@ -36,13 +38,19 @@ export class KhInsiderNavigator {
     let processedSongs: number = 0;
     await Promise.all(
       albumSongMp3Urls.map(async (song) => {
+        if (await this.fileReader.fileExistsAsync(song.nameAsMp3)) {
+          processedSongs++;
+          console.log(`${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.name}" because it's already downloaded.`);
+          return;
+        }
+
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
 
         if (!download) {
           return;
         }
 
-        await this.fileWriter.writeBufferAsync(`${download.song.name}.mp3`, download.data);
+        await this.fileWriter.writeBufferAsync(download.song.nameAsMp3, download.data);
         processedSongs++;
         console.log(`${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.name}" successfully processed.`);
       })
