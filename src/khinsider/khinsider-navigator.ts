@@ -33,7 +33,8 @@ export class KhInsiderNavigator {
     const albumSongMp3Urls = await this.enumerateAlbumSongsAsync();
     console.log(`Found ${albumSongMp3Urls.length} songs to download.`);
     console.log(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
-    const downloads = await Promise.all(
+    let processedSongs: number = 0;
+    await Promise.all(
       albumSongMp3Urls.map(async (song) => {
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
 
@@ -42,7 +43,8 @@ export class KhInsiderNavigator {
         }
 
         await this.fileWriter.writeBufferAsync(`${download.song.name}.mp3`, download.data);
-        console.log(`"${download.song.name}" successfully processed.`);
+        processedSongs++;
+        console.log(`${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.name}" successfully processed.`);
       })
     );
     console.log(`Finished downloading ${albumSongMp3Urls.length} songs.`);

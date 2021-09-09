@@ -4,7 +4,8 @@
   "description": "A utility for downloading media from khinsider.",
   "main": "bin/index.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "ts-node src/index.ts"
   },
   "keywords": [
     "khinsider",
