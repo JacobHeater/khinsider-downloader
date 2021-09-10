@@ -28,7 +28,7 @@ export class HtmlDomParser {
       throw new Error(response.statusText);
     }
 
-    if (!(response.headers["content-type"] as string).includes('text/html')) {
+    if (!(response.headers['content-type'] as string).includes('text/html')) {
       throw new Error('Response was not HTML and cannot be parsed to JSDOM.');
     }
 

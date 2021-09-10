@@ -7,12 +7,6 @@ import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
 import { FileReader } from '../io/file-reader';
 
-/*********************************
- *********************************
- TODO: Download flac not working.
- *********************************
- *********************************/
-
 const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
 export class KhInsiderNavigator {
@@ -64,7 +58,9 @@ export class KhInsiderNavigator {
         if (await this.fileReader.fileExistsAsync(song.getNameAsFormat(this.format))) {
           processedSongs++;
           console.log(
-            `${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.getNameAsFormat(this.format)}" because it's already downloaded.`
+            `${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.getNameAsFormat(
+              this.format
+            )}" because it's already downloaded.`
           );
           return;
         }
@@ -74,10 +70,15 @@ export class KhInsiderNavigator {
           return;
         }
 
-        await this.fileWriter.writeBufferAsync(download.song.getNameAsFormat(this.format), download.data);
+        await this.fileWriter.writeBufferAsync(
+          download.song.getNameAsFormat(this.format),
+          download.data
+        );
         processedSongs++;
         console.log(
-          `${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.getNameAsFormat(this.format)}" successfully processed.`
+          `${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.getNameAsFormat(
+            this.format
+          )}" successfully processed.`
         );
       })
     );
