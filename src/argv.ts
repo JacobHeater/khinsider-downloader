@@ -13,4 +13,11 @@ export const argv = yargs
     type: 'string',
     demandOption: true,
   })
+  .option('format', {
+    alias: 'f',
+    description: 'Which format do you want to download?',
+    choices: ['flac', 'mp3'],
+    default: 'mp3',
+    type: 'string',
+  })
   .parseSync();

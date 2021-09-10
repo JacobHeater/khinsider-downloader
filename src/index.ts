@@ -1,8 +1,7 @@
-// import { argv } from './argv';
-
+import { argv } from "./argv";
 import { KhInsiderNavigator } from "./khinsider/khinsider-navigator";
 
-const khinsiderNavigator = new KhInsiderNavigator('super-mario-rpg-1996-snes');
+const khinsiderNavigator = new KhInsiderNavigator(argv.album, argv.outdir, argv.format);
 
 (async () => {
     await khinsiderNavigator.downloadAlbumAsync();

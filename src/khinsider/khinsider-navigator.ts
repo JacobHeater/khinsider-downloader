@@ -1,11 +1,17 @@
 import download from 'download';
 import { homedir } from 'os';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { HtmlDomParser } from '../http/html-dom-parser';
 import { FileWriter } from '../io/file-writer';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
 import { FileReader } from '../io/file-reader';
+
+/*********************************
+ *********************************
+ TODO: Download flac not working.
+ *********************************
+ *********************************/
 
 const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
@@ -14,18 +20,35 @@ export class KhInsiderNavigator {
    * Inintializes a new instance of the KhInsiderNavigator class.
    *
    * @param albumName The name of the album to download.
+   * @param outdir The directory to publish to.
+   * @param format The format to download as.
    */
-  constructor(albumName: string) {
+  constructor(
+    private readonly albumName: string,
+    private readonly outdir: string,
+    private readonly format: string = 'mp3'
+  ) {
     if (!albumName?.trim()) {
       throw new Error('Argument albumName is required.');
     }
 
+    if (!outdir) {
+      throw new Error('Argument outdir is required.');
+    } else if (outdir.startsWith('~')) {
+      outdir = outdir.replace('~', homedir());
+    }
+
+    this.outdir = resolve(outdir);
     this.downloadUrl = getKhInsiderAlbumUrl(albumName);
+    this.destdir = join(this.outdir, this.albumName);
+    this.fileWriter = new FileWriter(this.destdir);
+    this.fileReader = new FileReader(this.destdir);
   }
 
   private readonly downloadUrl: string;
-  private readonly fileWriter = new FileWriter(join(homedir(), 'Downloads', 'test'));
-  private readonly fileReader = new FileReader(join(homedir(), 'Downloads', 'test'));
+  private readonly fileWriter: FileWriter;
+  private readonly fileReader: FileReader;
+  private readonly destdir: string;
 
   /**
    * Downloads the album asynchronously from KHInsider.
@@ -36,26 +59,30 @@ export class KhInsiderNavigator {
     console.log(`Found ${albumSongMp3Urls.length} songs to download.`);
     console.log(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
     let processedSongs: number = 0;
-    await Promise.all(
+    await Promise.allSettled(
       albumSongMp3Urls.map(async (song) => {
-        if (await this.fileReader.fileExistsAsync(song.nameAsMp3)) {
+        if (await this.fileReader.fileExistsAsync(song.getNameAsFormat(this.format))) {
           processedSongs++;
-          console.log(`${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.name}" because it's already downloaded.`);
+          console.log(
+            `${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.getNameAsFormat(this.format)}" because it's already downloaded.`
+          );
           return;
         }
 
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
-
         if (!download) {
           return;
         }
 
-        await this.fileWriter.writeBufferAsync(download.song.nameAsMp3, download.data);
+        await this.fileWriter.writeBufferAsync(download.song.getNameAsFormat(this.format), download.data);
         processedSongs++;
-        console.log(`${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.name}" successfully processed.`);
+        console.log(
+          `${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.getNameAsFormat(this.format)}" successfully processed.`
+        );
       })
     );
-    console.log(`Finished downloading ${albumSongMp3Urls.length} songs.`);
+
+    console.log(`Finished downloading ${albumSongMp3Urls.length} songs to "${this.destdir}".`);
   }
 
   private async getSongBinaryFromKhInsiderSongAsync(
@@ -69,13 +96,13 @@ export class KhInsiderNavigator {
       return;
     }
 
-    console.log(`Downloading "${song.name}" ...`);
+    console.log(`Downloading "${song.getNameAsFormat(this.format)}" ...`);
 
     for (let i = 0; i < songDownloadLinks.length; i++) {
       const link = songDownloadLinks[i];
       const parent = link.parentNode;
 
-      if (!link.textContent?.toLowerCase().includes('mp3')) {
+      if (!link.textContent?.toLowerCase().includes(this.format)) {
         continue;
       }
 
@@ -112,15 +139,16 @@ export class KhInsiderNavigator {
       }
 
       const name = row.querySelector('td:nth-child(3)')?.textContent;
+      const songNumber = parseInt(row.querySelector('td:nth-child(2)')?.textContent || '');
       const url = row.querySelector('a')?.href;
 
-      if (!name || !url) {
+      if (!name || !url || isNaN(songNumber)) {
         continue;
       }
 
       if (url.includes('.mp3')) {
         const cleanUrl: string = `${BASE_URL}/${url.replace('/game-soundtracks/album/', '')}`;
-        songMp3Urls.push(new KhInsiderSong(cleanUrl, name));
+        songMp3Urls.push(new KhInsiderSong(cleanUrl, name, songNumber));
       }
     }
 
