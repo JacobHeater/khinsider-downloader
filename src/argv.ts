@@ -1,5 +1,12 @@
 import yargs from 'yargs';
 
+/**
+ * The argv for the application.
+ *
+ * * --album
+ * * --outdir
+ * * --format
+ */
 export const argv = yargs
   .option('album', {
     alias: 'a',

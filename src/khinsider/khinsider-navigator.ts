@@ -70,7 +70,7 @@ export class KhInsiderNavigator {
           return;
         }
 
-        await this.fileWriter.writeBufferAsync(
+        await this.fileWriter.writeFileAsync(
           download.song.getNameAsFormat(this.format),
           download.data
         );
@@ -163,6 +163,14 @@ export class KhInsiderNavigator {
   }
 }
 
+/**
+ * Returns the URL for the khsinsider album with the album
+ * name appended to the khinsider base URL.
+ *
+ * @param albumName The name of the khinsider album. This can be found as the
+ *                  last part of the album URL.
+ * @returns
+ */
 export function getKhInsiderAlbumUrl(albumName: string): string {
   return `${BASE_URL}/${albumName}`;
 }
