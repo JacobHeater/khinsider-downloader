@@ -1,13 +1,8 @@
 import yargs from 'yargs';
+import { version } from '../package.json';
 
-/**
- * The argv for the application.
- *
- * * --album
- * * --outdir
- * * --format
- */
 export const argv = yargs
+  .version(`KH Insider Downloader v${version}.`)
   .option('album', {
     alias: 'a',
     description: 'The album to download.',
