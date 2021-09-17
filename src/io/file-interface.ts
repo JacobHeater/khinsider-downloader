@@ -1,5 +1,6 @@
 import { ensureDirSync } from 'fs-extra';
-import { join } from 'path';
+import { homedir } from 'os';
+import { join, resolve } from 'path';
 
 export abstract class FileInterface {
   /**
@@ -13,7 +14,36 @@ export abstract class FileInterface {
       throw new Error('Argument basePath is required.');
     }
 
-    ensureDirSync(basePath);
+    this.resolveBasePath();
+
+    if (ensureDirOnInstantiate) {
+      ensureDirSync(this.basePath);
+    }
+  }
+
+  /**
+   * Gets the path that this instance is using.
+   */
+  get filePath(): string {
+    return this.basePath;
+  }
+
+  /**
+   * Resolves the path where the given path contains
+   * a homedir reference `~`.
+   *
+   * @param pathlike The path to resolve.
+   */
+  resolveHomeDir(pathlike: string): string {
+    if (pathlike.startsWith('~')) {
+      if (!pathlike.startsWith('~/')) {
+        pathlike = pathlike.replace('~', '~/');
+      }
+
+      return join(homedir(), pathlike.replace('~/', ''));
+    }
+
+    return pathlike;
   }
 
   /**
@@ -35,5 +65,9 @@ export abstract class FileInterface {
    */
   protected getFilePath(fileName: string): string {
     return join(this.basePath, this.cleanFileName(fileName));
+  }
+
+  private resolveBasePath(): void {
+    this.basePath = resolve(this.resolveHomeDir(this.basePath));
   }
 }

@@ -1,4 +1,5 @@
 import yargs from 'yargs';
+
 import { version } from '../package.json';
 
 export const argv = yargs

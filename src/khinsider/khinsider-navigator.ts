@@ -1,11 +1,11 @@
 import download from 'download';
-import { homedir } from 'os';
-import { join, resolve } from 'path';
+import { join } from 'path';
+
 import { HtmlDomParser } from '../http/html-dom-parser';
+import { FileReader } from '../io/file-reader';
 import { FileWriter } from '../io/file-writer';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
-import { FileReader } from '../io/file-reader';
 
 const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
@@ -17,32 +17,25 @@ export class KhInsiderNavigator {
    * @param outdir The directory to publish to.
    * @param format The format to download as.
    */
-  constructor(
-    private readonly albumName: string,
-    private readonly outdir: string,
-    private readonly format: string = 'mp3'
-  ) {
+  constructor(albumName: string, outdir: string, private readonly format: string = 'mp3') {
     if (!albumName?.trim()) {
       throw new Error('Argument albumName is required.');
     }
 
     if (!outdir) {
       throw new Error('Argument outdir is required.');
-    } else if (outdir.startsWith('~')) {
-      outdir = outdir.replace('~', homedir());
     }
 
-    this.outdir = resolve(outdir);
+    outdir = join(outdir, albumName);
+
     this.downloadUrl = getKhInsiderAlbumUrl(albumName);
-    this.destdir = join(this.outdir, this.albumName);
-    this.fileWriter = new FileWriter(this.destdir);
-    this.fileReader = new FileReader(this.destdir);
+    this.fileWriter = new FileWriter(outdir);
+    this.fileReader = new FileReader(outdir);
   }
 
   private readonly downloadUrl: string;
   private readonly fileWriter: FileWriter;
   private readonly fileReader: FileReader;
-  private readonly destdir: string;
 
   /**
    * Downloads the album asynchronously from KHInsider.
@@ -83,7 +76,9 @@ export class KhInsiderNavigator {
       })
     );
 
-    console.log(`Finished downloading ${albumSongMp3Urls.length} songs to "${this.destdir}".`);
+    console.log(
+      `Finished downloading ${albumSongMp3Urls.length} songs to "${this.fileWriter.filePath}".`
+    );
   }
 
   private async getSongBinaryFromKhInsiderSongAsync(

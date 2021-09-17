@@ -1,4 +1,5 @@
 import { stat } from 'fs-extra';
+
 import { FileInterface } from './file-interface';
 
 export class FileReader extends FileInterface {

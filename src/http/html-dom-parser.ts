@@ -1,5 +1,6 @@
 import axios, { Method } from 'axios';
 import { JSDOM } from 'jsdom';
+
 import { isSuccessCode } from './status-codes';
 
 export class HtmlDomParser {

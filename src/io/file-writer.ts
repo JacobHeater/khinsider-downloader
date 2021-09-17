@@ -1,4 +1,5 @@
 import { writeFile } from 'fs-extra';
+
 import { FileInterface } from './file-interface';
 
 export class FileWriter extends FileInterface {
