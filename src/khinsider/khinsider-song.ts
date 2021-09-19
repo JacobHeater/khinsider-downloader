@@ -1,5 +1,5 @@
-import { ArgumentInvalidError, ArgumentInvalidReason } from "../argument-invalid-error";
-import { isStringFalsey } from "../validation/string-validation";
+import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
+import { isStringFalsey } from '../validation/string-validation';
 
 export class KhInsiderSong {
   /**

@@ -1,6 +1,6 @@
+import fs, { ensureDirSync, writeFile } from 'fs-extra';
 import { homedir } from 'os';
 import { join, resolve } from 'path';
-import fs, { ensureDirSync, writeFile } from 'fs-extra';
 
 import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 import { isStringFalsey } from '../validation/string-validation';

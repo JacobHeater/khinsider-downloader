@@ -1,7 +1,8 @@
+import { join } from 'path';
+import process from 'process';
+
 import { ArgumentInvalidError } from '../argument-invalid-error';
 import { FileInterface } from './file-interface';
-import process from 'process';
-import { join } from 'path';
 
 class TestFileInterface extends FileInterface {
   testCleanFileName(filename: string): string {

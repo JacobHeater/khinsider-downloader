@@ -1,7 +1,7 @@
 import axios, { Method } from 'axios';
 import { JSDOM } from 'jsdom';
-import { isStringFalsey } from '../validation/string-validation';
 
+import { isStringFalsey } from '../validation/string-validation';
 import { isSuccessCode } from './status-codes';
 
 export class HtmlDomParser {

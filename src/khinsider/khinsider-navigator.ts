@@ -1,7 +1,7 @@
 import download from 'download';
 import { join } from 'path';
-import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 
+import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 import { HtmlDomParser } from '../http/html-dom-parser';
 import { FileInterface } from '../io/file-interface';
 import { isStringFalsey } from '../validation/string-validation';
