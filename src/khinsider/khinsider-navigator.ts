@@ -1,13 +1,15 @@
 import download from 'download';
 import { join } from 'path';
+import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 
 import { HtmlDomParser } from '../http/html-dom-parser';
-import { FileReader } from '../io/file-reader';
-import { FileWriter } from '../io/file-writer';
+import { FileInterface } from '../io/file-interface';
+import { isStringFalsey } from '../validation/string-validation';
+import { AlbumNotFoundError } from './album-not-found-error';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
 
-const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
+export const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
 export class KhInsiderNavigator {
   /**
@@ -17,25 +19,27 @@ export class KhInsiderNavigator {
    * @param outdir The directory to publish to.
    * @param format The format to download as.
    */
-  constructor(albumName: string, outdir: string, private readonly format: string = 'mp3') {
-    if (!albumName?.trim()) {
-      throw new Error('Argument albumName is required.');
+  constructor(private readonly albumName: string, outdir: string, private readonly format: 'mp3' | 'flac' = 'mp3') {
+    if (isStringFalsey(albumName)) {
+      throw new ArgumentInvalidError('albumName', ArgumentInvalidReason.Null);
     }
 
-    if (!outdir) {
-      throw new Error('Argument outdir is required.');
+    if (isStringFalsey(outdir)) {
+      throw new ArgumentInvalidError('outdir', ArgumentInvalidReason.Null);
+    }
+
+    if (isStringFalsey(format) || !['mp3', 'flac'].includes(format)) {
+      throw new ArgumentInvalidError('format', ArgumentInvalidReason.InvalidFormat);
     }
 
     outdir = join(outdir, albumName);
 
     this.downloadUrl = getKhInsiderAlbumUrl(albumName);
-    this.fileWriter = new FileWriter(outdir);
-    this.fileReader = new FileReader(outdir);
+    this.fileInterface = new FileInterface(outdir);
   }
 
   private readonly downloadUrl: string;
-  private readonly fileWriter: FileWriter;
-  private readonly fileReader: FileReader;
+  private readonly fileInterface: FileInterface;
 
   /**
    * Downloads the album asynchronously from KHInsider.
@@ -48,7 +52,7 @@ export class KhInsiderNavigator {
     let processedSongs: number = 0;
     await Promise.allSettled(
       albumSongMp3Urls.map(async (song) => {
-        if (await this.fileReader.fileExistsAsync(song.getNameAsFormat(this.format))) {
+        if (await this.fileInterface.fileExistsAsync(song.getNameAsFormat(this.format))) {
           processedSongs++;
           console.log(
             `${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.getNameAsFormat(
@@ -60,10 +64,11 @@ export class KhInsiderNavigator {
 
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
         if (!download) {
+          console.warn(`There was no data from the download of ${song}. Skipping.`);
           return;
         }
 
-        await this.fileWriter.writeFileAsync(
+        await this.fileInterface.writeFileAsync(
           download.song.getNameAsFormat(this.format),
           download.data
         );
@@ -77,7 +82,7 @@ export class KhInsiderNavigator {
     );
 
     console.log(
-      `Finished downloading ${albumSongMp3Urls.length} songs to "${this.fileWriter.filePath}".`
+      `Finished downloading ${albumSongMp3Urls.length} songs to "${this.fileInterface.basePath}".`
     );
   }
 
@@ -121,7 +126,7 @@ export class KhInsiderNavigator {
       !songList ||
       pageDom.querySelector('#EchoTopic')?.textContent?.toLowerCase().includes('no such album')
     ) {
-      return [];
+      throw new AlbumNotFoundError(this.albumName);
     }
 
     const songMp3Urls: KhInsiderSong[] = [];

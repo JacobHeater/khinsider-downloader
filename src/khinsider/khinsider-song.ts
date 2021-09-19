@@ -1,3 +1,6 @@
+import { ArgumentInvalidError, ArgumentInvalidReason } from "../argument-invalid-error";
+import { isStringFalsey } from "../validation/string-validation";
+
 export class KhInsiderSong {
   /**
    * Initializes a new instance of the KhInsiderSong class.
@@ -6,7 +9,19 @@ export class KhInsiderSong {
    * @param name The name of the song.
    * @param number The track number of the song in the list.
    */
-  constructor(readonly url: string, readonly name: string, readonly number: number) {}
+  constructor(readonly url: string, readonly name: string, readonly number: number) {
+    if (isStringFalsey(url)) {
+      throw new ArgumentInvalidError('url', ArgumentInvalidReason.Null);
+    }
+
+    if (isStringFalsey(name)) {
+      throw new ArgumentInvalidError('name', ArgumentInvalidReason.Null);
+    }
+
+    if (number < 1 || isNaN(Number(number))) {
+      throw new ArgumentInvalidError('number', ArgumentInvalidReason.InvalidFormat);
+    }
+  }
 
   /**
    * Gets the name as an mp3 file.

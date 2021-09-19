@@ -5,7 +5,7 @@
  * @returns
  */
 export function isSuccessCode(code: number): boolean {
-  if (isNaN(code)) {
+  if (isNaN(code) || isNaN(Number(code))) {
     return false;
   }
 

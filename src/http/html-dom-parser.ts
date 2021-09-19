@@ -1,5 +1,6 @@
 import axios, { Method } from 'axios';
 import { JSDOM } from 'jsdom';
+import { isStringFalsey } from '../validation/string-validation';
 
 import { isSuccessCode } from './status-codes';
 
@@ -16,7 +17,7 @@ export class HtmlDomParser {
    * @param method The http method to use.
    */
   async urlRequestToDomAsync(url: string, method: Method = 'GET'): Promise<JSDOM> {
-    if (!url?.trim()) {
+    if (isStringFalsey(url)) {
       throw new Error('Argument url is required.');
     }
 
