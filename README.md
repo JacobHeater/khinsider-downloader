@@ -1,5 +1,7 @@
 # KhInsider Downloder
 
+![Main Build](https://github.com/jacobheater/khinsider-downloader/actions/workflows/ci-main/badge.svg)
+
 This is a small utility command line application
 that aids with downloading sountracks from
 [khinsider](https://downloads.khinsider.com/).
