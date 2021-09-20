@@ -104,6 +104,7 @@ export class KhInsiderNavigator {
       const parent = link.parentNode;
 
       if (!link.textContent?.toLowerCase().includes(this.format)) {
+        console.warn(`No song "${song.getNameAsFormat(this.format)}" was found. Try another format.`);
         continue;
       }
 
