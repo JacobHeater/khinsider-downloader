@@ -1,5 +1,6 @@
 import axios, { Method } from 'axios';
 import { JSDOM } from 'jsdom';
+import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 
 import { isStringFalsey } from '../validation/string-validation';
 import { isSuccessCode } from './status-codes';
@@ -18,7 +19,11 @@ export class HtmlDomParser {
    */
   async urlRequestToDomAsync(url: string, method: Method = 'GET'): Promise<JSDOM> {
     if (isStringFalsey(url)) {
-      throw new Error('Argument url is required.');
+      throw new ArgumentInvalidError('url', ArgumentInvalidReason.Null);
+    }
+
+    if (isStringFalsey(method)) {
+      throw new ArgumentInvalidError('method', ArgumentInvalidReason.Null);
     }
 
     const response = await axios.request({
