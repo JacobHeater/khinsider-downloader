@@ -4,8 +4,8 @@
   "description": "A utility for downloading media from khinsider.",
   "main": "bin/index.ts",
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "TEST_MODE=1 jest",
+    "test:coverage": "npm test -- --coverage",
     "start": "ts-node src/index.ts"
   },
   "keywords": [
@@ -39,6 +39,7 @@
     "fs-extra": "^10.0.0",
     "jsdom": "^17.0.0",
     "ts-node": "^10.2.1",
+    "winston": "^3.3.3",
     "yargs": "^17.1.1"
   }
 }

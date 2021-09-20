@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 import { HtmlDomParser } from '../http/html-dom-parser';
 import { FileInterface } from '../io/file-interface';
+import { logger } from '../logging/logger';
 import { isStringFalsey } from '../validation/string-validation';
 import { AlbumNotFoundError } from './album-not-found-error';
 import { KhInsiderDownloadData } from './khinsider-download-data';
@@ -45,16 +46,16 @@ export class KhInsiderNavigator {
    * Downloads the album asynchronously from KHInsider.
    */
   async downloadAlbumAsync(): Promise<void> {
-    console.log('Gathering song list...');
+    logger.info('Gathering song list...');
     const albumSongMp3Urls = await this.enumerateAlbumSongsAsync();
-    console.log(`Found ${albumSongMp3Urls.length} songs to download.`);
-    console.log(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
+    logger.info(`Found ${albumSongMp3Urls.length} songs to download.`);
+    logger.info(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
     let processedSongs: number = 0;
     await Promise.allSettled(
       albumSongMp3Urls.map(async (song) => {
         if (await this.fileInterface.fileExistsAsync(song.getNameAsFormat(this.format))) {
           processedSongs++;
-          console.log(
+          logger.info(
             `${processedSongs} / ${albumSongMp3Urls.length} – Skipping "${song.getNameAsFormat(
               this.format
             )}" because it's already downloaded.`
@@ -64,7 +65,7 @@ export class KhInsiderNavigator {
 
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
         if (!download) {
-          console.warn(`There was no data from the download of ${song}. Skipping.`);
+          logger.warn(`There was no data from the download of ${song}. Skipping.`);
           return;
         }
 
@@ -73,7 +74,7 @@ export class KhInsiderNavigator {
           download.data
         );
         processedSongs++;
-        console.log(
+        logger.info(
           `${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.getNameAsFormat(
             this.format
           )}" successfully processed.`
@@ -81,7 +82,7 @@ export class KhInsiderNavigator {
       })
     );
 
-    console.log(
+    logger.info(
       `Finished downloading ${albumSongMp3Urls.length} songs to "${this.fileInterface.basePath}".`
     );
   }
@@ -97,14 +98,14 @@ export class KhInsiderNavigator {
       return;
     }
 
-    console.log(`Downloading "${song.getNameAsFormat(this.format)}" ...`);
+    logger.info(`Downloading "${song.getNameAsFormat(this.format)}" ...`);
 
     for (let i = 0; i < songDownloadLinks.length; i++) {
       const link = songDownloadLinks[i];
       const parent = link.parentNode;
 
       if (!link.textContent?.toLowerCase().includes(this.format)) {
-        console.warn(`No song "${song.getNameAsFormat(this.format)}" was found. Try another format.`);
+        logger.warn(`No song "${song.getNameAsFormat(this.format)}" was found. Try another format.`);
         continue;
       }
 
@@ -112,7 +113,7 @@ export class KhInsiderNavigator {
         const destinationUrl = (parent as HTMLAnchorElement).href;
         const bytes = await download(destinationUrl);
 
-        console.log(`Finished downloading "${song.name}."`);
+        logger.info(`Finished downloading "${song.name}."`);
 
         return new KhInsiderDownloadData(song, bytes);
       }
