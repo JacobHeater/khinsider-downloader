@@ -28,12 +28,14 @@ command, and pass the expected arguments there.
 
 ```bash
 Options:
-      --help     Show help                                             [boolean]
-      --version  Show version number                                   [boolean]
-  -a, --album    The album to download.                      [string] [required]
-  -o, --outdir   The name of the folder to produce.          [string] [required]
-  -f, --format   Which format do you want to download?
+      --help       Show help                                           [boolean]
+      --version    Show version number                                 [boolean]
+  -a, --album      The album to download.                    [string] [required]
+  -o, --outdir     The name of the folder to produce.        [string] [required]
+  -f, --format     Which format do you want to download?
                               [string] [choices: "flac", "mp3"] [default: "mp3"]
+  -l, --log-level  What level of logging verbosity do you want?
+                   [string] [choices: "info", "warn", "error"] [default: "info"]
 ```
 
 #### Using `npm start`
