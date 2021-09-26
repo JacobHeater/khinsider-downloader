@@ -1,10 +1,11 @@
-name: CI
+name: Bundle
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
     branches: [main]
-  pull_request:
-    branches: [main]
+    types:
+      - completed
 
 jobs:
   build:
@@ -21,11 +22,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Build
-        run: |
-          npm install
-          npm t
 
       - name: Bundle
         run: |
