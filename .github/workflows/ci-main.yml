@@ -35,4 +35,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: executables
-        path: bin/
+        path: bin/downloader.zip
