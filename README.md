@@ -72,6 +72,24 @@ supplied directory with the given album name. All
 songs that are downloaded will be written to that named
 folder.
 
+## Publishing Binaries
+
+To publish the binaries so that others can run them without having to
+clone the repository, you can use the `bundle` script by calling
+it as `npm run bundle`. The output will be generated to the `bin`
+directory.
+
+The output is published for the following platforms:
+
+* Windows (x64)
+* MacOS (x64)
+* Linux (x64)
+
+### Consuming as Build Artifacts
+
+Currently, the build pipeline creates artifacts for each build.
+The binaries can be pulled as artifacts from the build history.
+
 ## Issues
 
 If you encounter any issues during use, please

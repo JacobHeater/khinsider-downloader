@@ -1,12 +1,20 @@
 {
   "name": "khinsider-downloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A utility for downloading media from khinsider.",
   "main": "bin/index.ts",
   "scripts": {
     "test": "TEST_MODE=1 jest",
     "test:coverage": "npm test -- --coverage",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/app.ts",
+    "clean": "rimraf dist && rimraf bin",
+    "build": "tsc",
+    "rebuild": "npm run clean && npm run build",
+    "sync-version": "ts-node scripts/sync-version.ts",
+    "postversion": "npm run sync-version",
+    "prebundle": "npm run rebuild",
+    "bundle": "pkg dist/app.js --out-path=bin --targets=linux-x64,macos-x64,win-x64",
+    "postbundle": "ts-node scripts/rename-binaries.ts"
   },
   "keywords": [
     "khinsider",
@@ -28,6 +36,7 @@
     "@types/yargs": "^17.0.2",
     "fast-glob": "^3.2.7",
     "jest": "^27.2.0",
+    "pkg": "^5.3.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.2",

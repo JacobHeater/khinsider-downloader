@@ -26,3 +26,13 @@ jobs:
       run: |
         npm install
         npm t
+
+    - name: Bundle
+      run: |
+        npm run bundle
+
+    - name: Publish
+      uses: actions/upload-artifact@v2
+      with:
+        name: executables
+        path: bin/

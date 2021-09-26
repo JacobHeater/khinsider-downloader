@@ -1,8 +1,6 @@
 import yargs from 'yargs';
-
-import { version } from '../package.json';
-
-const IS_TEST_MODE = Boolean(process.env.TEST_MODE || false);
+import { version } from './app-config.json';
+import { IS_TEST_MODE } from './env';
 
 export const argv = yargs
   .version(`KH Insider Downloader v${version}.`)
