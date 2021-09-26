@@ -25,6 +25,7 @@ jobs:
 
       - name: Bundle
         run: |
+          npm install
           npm run bundle
 
       - name: Publish
