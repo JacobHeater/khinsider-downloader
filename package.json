@@ -1,12 +1,17 @@
 {
   "name": "khinsider-downloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A utility for downloading media from khinsider.",
   "main": "bin/index.ts",
   "scripts": {
     "test": "TEST_MODE=1 jest",
     "test:coverage": "npm test -- --coverage",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "rebuild": "npm run clean && npm run build",
+    "sync-version": "ts-node scripts/sync-version.ts",
+    "postversion": "npm run sync-version"
   },
   "keywords": [
     "khinsider",
