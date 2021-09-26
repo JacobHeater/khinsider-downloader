@@ -141,11 +141,23 @@ export class KhInsiderNavigator {
         continue;
       }
 
-      const name = row.querySelector('td:nth-child(3)')?.textContent;
-      const songNumber = parseInt(row.querySelector('td:nth-child(2)')?.textContent || '');
-      const url = row.querySelector('a')?.href;
+      let name = row.querySelector('td:nth-child(3)')?.textContent;
+      let songNumber = parseInt(row.querySelector('td:nth-child(2)')?.textContent || '');
+      let url = row.querySelector('a')?.href;
+
+      // TODO: Test more with animal-crossing-new-leaf-2012-3ds-gamerip
+
+      if (isNaN(songNumber)) {
+        // Some albums are missing song numbers as the first
+        // td element in the table. Therefore, we must move back
+        // the selefctor -1 to get the song name, and infer the
+        // song number from the row number.
+        name = row.querySelector('td:nth-child(2)')?.textContent;
+        songNumber = i + 1;
+      }
 
       if (!name || !url || isNaN(songNumber)) {
+        logger.warn(`Missing name, url, or song number. name: ${name}, url: ${url}, song number: ${songNumber}`);
         continue;
       }
 
