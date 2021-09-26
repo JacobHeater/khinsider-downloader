@@ -7,7 +7,7 @@
     "test": "TEST_MODE=1 jest",
     "test:coverage": "npm test -- --coverage",
     "start": "ts-node src/app.ts",
-    "clean": "rimraf dist && rimraf bin",
+    "clean": "ts-node scripts/rimraf-multi.ts -p=bin,coverage,dist,temp",
     "build": "tsc",
     "rebuild": "npm run clean && npm run build",
     "sync-version": "ts-node scripts/sync-version.ts",
