@@ -3,7 +3,7 @@
 ![Main Build](https://github.com/jacobheater/khinsider-downloader/actions/workflows/ci-main.yml/badge.svg)
 ![Deploy](https://github.com/jacobheater/khinsider-downloader/actions/workflows/bundle.yml/badge.svg)
 
-This is a small utility command line application
+This is a small, but **lightning fast**, utility command line application
 that aids with downloading sountracks from
 [khinsider](https://downloads.khinsider.com/).
 The purpose of this application is to expedite the
