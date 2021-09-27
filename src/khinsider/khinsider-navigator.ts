@@ -51,7 +51,7 @@ export class KhInsiderNavigator {
     logger.info(`Found ${albumSongMp3Urls.length} songs to download.`);
     logger.info(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
     let processedSongs: number = 0;
-    await Promise.allSettled(
+    await Promise.all(
       albumSongMp3Urls.map(async (song) => {
         if (await this.fileInterface.fileExistsAsync(song.getNameAsFormat(this.format))) {
           processedSongs++;
@@ -64,7 +64,7 @@ export class KhInsiderNavigator {
         }
 
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
-        if (!download) {
+        if (!download || !download.data || !download.data.length) {
           logger.warn(`There was no data from the download of ${song}. Skipping.`);
           return;
         }
@@ -133,6 +133,7 @@ export class KhInsiderNavigator {
 
     const songMp3Urls: KhInsiderSong[] = [];
     const tableRows = songList.querySelectorAll('tr');
+    let songNumberWhenTableDoesNotInclude = 0;
 
     for (let i = 0; i < tableRows.length; i++) {
       const row = tableRows[i];
@@ -153,7 +154,8 @@ export class KhInsiderNavigator {
         // the selefctor -1 to get the song name, and infer the
         // song number from the row number.
         name = row.querySelector('td:nth-child(2)')?.textContent;
-        songNumber = i + 1;
+        songNumberWhenTableDoesNotInclude++;
+        songNumber = songNumberWhenTableDoesNotInclude;
       }
 
       if (!name || !url || isNaN(songNumber)) {

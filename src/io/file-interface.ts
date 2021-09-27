@@ -61,7 +61,7 @@ export class FileInterface {
    * @param data The data to write.
    * @returns
    */
-  writeFileAsync(fileName: string, data: Buffer | string): Promise<void> {
+  async writeFileAsync(fileName: string, data: Buffer | string): Promise<void> {
     if (isStringFalsey(fileName)) {
       throw new ArgumentInvalidError('fileName', ArgumentInvalidReason.Null);
     }
@@ -76,15 +76,15 @@ export class FileInterface {
   /**
    * Does the file at the given path exist?
    *
-   * @param path The path to the file.
+   * @param fileName The path to the file.
    */
-  async fileExistsAsync(path: string): Promise<boolean> {
-    if (isStringFalsey(path)) {
+  async fileExistsAsync(fileName: string): Promise<boolean> {
+    if (isStringFalsey(fileName)) {
       throw new ArgumentInvalidError('path', ArgumentInvalidReason.Null);
     }
 
     try {
-      await fs.stat(path);
+      await fs.stat(this.getFilePath(fileName));
 
       return true;
     } catch (_) {
