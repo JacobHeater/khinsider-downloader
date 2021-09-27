@@ -20,7 +20,11 @@ export class KhInsiderNavigator {
    * @param outdir The directory to publish to.
    * @param format The format to download as.
    */
-  constructor(private readonly albumName: string, outdir: string, private readonly format: 'mp3' | 'flac' = 'mp3') {
+  constructor(
+    private readonly albumName: string,
+    outdir: string,
+    private readonly format: 'mp3' | 'flac' = 'mp3'
+  ) {
     if (isStringFalsey(albumName)) {
       throw new ArgumentInvalidError('albumName', ArgumentInvalidReason.Null);
     }
@@ -65,7 +69,7 @@ export class KhInsiderNavigator {
 
         const download = await this.getSongBinaryFromKhInsiderSongAsync(song);
         if (!download || !download.data || !download.data.length) {
-          logger.warn(`There was no data from the download of ${song}. Skipping.`);
+          logger.warn(`There was no data from the download of ${song.name}. Skipping.`);
           return;
         }
 
@@ -91,6 +95,15 @@ export class KhInsiderNavigator {
     song: KhInsiderSong
   ): Promise<KhInsiderDownloadData | undefined> {
     const songDownloadPage = await new HtmlDomParser().urlRequestToDomAsync(song.url);
+
+    if (!songDownloadPage) {
+      logger.warn(
+        `Cannot proceed with song download for song ${song.name} because page information was unretrievable.`
+      );
+
+      return;
+    }
+
     const document = songDownloadPage.window.document;
     const songDownloadLinks = document.querySelectorAll('.songDownloadLink');
 
@@ -105,23 +118,34 @@ export class KhInsiderNavigator {
       const parent = link.parentNode;
 
       if (!link.textContent?.toLowerCase().includes(this.format)) {
-        logger.warn(`No song "${song.getNameAsFormat(this.format)}" was found. Try another format.`);
+        logger.warn(
+          `No song "${song.getNameAsFormat(this.format)}" was found. Try another format.`
+        );
         continue;
       }
 
       if (parent) {
-        const destinationUrl = (parent as HTMLAnchorElement).href;
-        const bytes = await download(destinationUrl);
+        try {
+          const destinationUrl = (parent as HTMLAnchorElement).href;
+          const bytes = await download(destinationUrl);
 
-        logger.info(`Finished downloading "${song.name}."`);
+          logger.info(`Finished downloading "${song.name}."`);
 
-        return new KhInsiderDownloadData(song, bytes);
+          return new KhInsiderDownloadData(song, bytes);
+        } catch (e) {
+          logger.error(`Could not download "${song.name}" due to underlying HTTP error.`);
+        }
       }
     }
   }
 
   private async enumerateAlbumSongsAsync(): Promise<KhInsiderSong[]> {
     const pageDom = await this.getAlbumPageDomAsync();
+
+    if (!pageDom) {
+      return [];
+    }
+
     const songList = pageDom.querySelector('#songlist');
 
     if (
@@ -146,8 +170,6 @@ export class KhInsiderNavigator {
       let songNumber = parseInt(row.querySelector('td:nth-child(2)')?.textContent || '');
       let url = row.querySelector('a')?.href;
 
-      // TODO: Test more with animal-crossing-new-leaf-2012-3ds-gamerip
-
       if (isNaN(songNumber)) {
         // Some albums are missing song numbers as the first
         // td element in the table. Therefore, we must move back
@@ -159,7 +181,9 @@ export class KhInsiderNavigator {
       }
 
       if (!name || !url || isNaN(songNumber)) {
-        logger.warn(`Missing name, url, or song number. name: ${name}, url: ${url}, song number: ${songNumber}`);
+        logger.warn(
+          `Missing name, url, or song number. name: ${name}, url: ${url}, song number: ${songNumber}`
+        );
         continue;
       }
 
@@ -172,8 +196,14 @@ export class KhInsiderNavigator {
     return songMp3Urls;
   }
 
-  private async getAlbumPageDomAsync(): Promise<Document> {
+  private async getAlbumPageDomAsync(): Promise<Document | undefined> {
     const page = await new HtmlDomParser().urlRequestToDomAsync(this.downloadUrl);
+
+    if (!page) {
+      logger.warn(`Could not proceed with album (${this.albumName}) download because album page information was not retrievable.`);
+
+      return;
+    }
 
     return page.window.document;
   }

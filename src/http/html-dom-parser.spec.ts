@@ -9,7 +9,7 @@ it('Should parse a valid html string as a DOM object', async () => {
 
     expect(response).toBeDefined();
     expect(response).not.toBeNull();
-    expect(response.window).toBeDefined();
+    expect(response?.window).toBeDefined();
   } catch (err) {
     fail(err);
   }
