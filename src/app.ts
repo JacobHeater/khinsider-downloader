@@ -10,7 +10,7 @@ if (!argv.outdir) {
   throw new ArgumentInvalidError('--outdir', ArgumentInvalidReason.Null);
 }
 
-const khinsiderNavigator = new KhInsiderNavigator(argv.album, argv.outdir, argv.format as 'mp3' | 'flac' || 'mp3');
+const khinsiderNavigator = new KhInsiderNavigator(argv.album, argv.outdir, argv.format as 'mp3' | 'flac' | 'mp3', argv.plugins);
 
 (async () => {
   await khinsiderNavigator.downloadAlbumAsync();

@@ -1,14 +1,16 @@
 import download from 'download';
-import { join } from 'path';
+import { join, resolve } from 'path';
 
 import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
 import { HtmlDomParser } from '../http/html-dom-parser';
 import { FileInterface } from '../io/file-interface';
 import { logger } from '../logging/logger';
+import { Plugin, PluginEventHandlerList } from '../plugins/plugin';
 import { isStringFalsey } from '../validation/string-validation';
 import { AlbumNotFoundError } from './album-not-found-error';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
+import glob from 'fast-glob';
 
 export const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
@@ -23,7 +25,8 @@ export class KhInsiderNavigator {
   constructor(
     private readonly albumName: string,
     outdir: string,
-    private readonly format: 'mp3' | 'flac' = 'mp3'
+    private readonly format: 'mp3' | 'flac' = 'mp3',
+    private readonly plugins: string,
   ) {
     if (isStringFalsey(albumName)) {
       throw new ArgumentInvalidError('albumName', ArgumentInvalidReason.Null);
@@ -45,16 +48,22 @@ export class KhInsiderNavigator {
 
   private readonly downloadUrl: string;
   private readonly fileInterface: FileInterface;
+  private readonly loadedPlugins: Plugin[] = [];
 
   /**
    * Downloads the album asynchronously from KHInsider.
    */
   async downloadAlbumAsync(): Promise<void> {
+    if (this.plugins.trim()) {
+      logger.info('Initializing plugins...');
+      await this.initializePlugins();
+    }
     logger.info('Gathering song list...');
     const albumSongMp3Urls = await this.enumerateAlbumSongsAsync();
     logger.info(`Found ${albumSongMp3Urls.length} songs to download.`);
     logger.info(`Bulk downloading all ${albumSongMp3Urls.length} songs.`);
     let processedSongs: number = 0;
+    const processedSongDataList: KhInsiderDownloadData[] = [];
     await Promise.all(
       albumSongMp3Urls.map(async (song) => {
         if (await this.fileInterface.fileExistsAsync(song.getNameAsFormat(this.format))) {
@@ -73,6 +82,8 @@ export class KhInsiderNavigator {
           return;
         }
 
+        processedSongDataList.push(download);
+
         await this.fileInterface.writeFileAsync(
           download.song.getNameAsFormat(this.format),
           download.data
@@ -89,6 +100,18 @@ export class KhInsiderNavigator {
     logger.info(
       `Finished downloading ${albumSongMp3Urls.length} songs to "${this.fileInterface.basePath}".`
     );
+
+    await this.firePluginEvent(plugin => plugin.onAllDownloadsComplete, processedSongDataList);
+  }
+
+  private async initializePlugins(): Promise<void> {
+    const pluginsToLoad = (await glob(this.plugins)).filter(path => path.endsWith('.plugin.ts'));
+
+    for (const plugin of pluginsToLoad) {
+      const pluginModule = await import(resolve(plugin));
+
+      this.loadedPlugins.push(pluginModule.default as Plugin);
+    }
   }
 
   private async getSongBinaryFromKhInsiderSongAsync(
@@ -103,6 +126,8 @@ export class KhInsiderNavigator {
 
       return;
     }
+
+    await this.firePluginEvent(plugin => plugin.onBeginDownload, song);
 
     const document = songDownloadPage.window.document;
     const songDownloadLinks = document.querySelectorAll('.songDownloadLink');
@@ -131,7 +156,10 @@ export class KhInsiderNavigator {
 
           logger.info(`Finished downloading "${song.name}."`);
 
-          return new KhInsiderDownloadData(song, bytes);
+          const data = new KhInsiderDownloadData(song, bytes);
+          await this.firePluginEvent(plugin => plugin.onDownloadComplete, this.albumName, song, data);
+
+          return data;
         } catch (e) {
           logger.error(`Could not download "${song.name}" due to underlying HTTP error.`);
         }
@@ -193,6 +221,8 @@ export class KhInsiderNavigator {
       }
     }
 
+    await this.firePluginEvent(plugin => plugin.onSongListRetrieved, songMp3Urls);
+
     return songMp3Urls;
   }
 
@@ -206,6 +236,24 @@ export class KhInsiderNavigator {
     }
 
     return page.window.document;
+  }
+
+  private async firePluginEvent(eventSelector: (plugin: Plugin) => PluginEventHandlerList, ...args: any[]): Promise<void> {
+    if (!this.loadedPlugins.length) {
+      return Promise.resolve();
+    }
+    
+    const pluginHandlersToCall: PluginEventHandlerList = []; 
+    
+    for (const plugin of this.loadedPlugins) {
+      const handlers = eventSelector(plugin);
+
+      if (Array.isArray(handlers) && handlers.length > 0) {
+        pluginHandlersToCall.push(...handlers);
+      } 
+    }
+
+    await Promise.all(pluginHandlersToCall.map(handler => handler(...args)));
   }
 }
 
