@@ -13,8 +13,11 @@
     "sync-version": "ts-node scripts/sync-version.ts",
     "postversion": "npm run sync-version",
     "prebundle": "npm run rebuild",
-    "bundle": "pkg dist/app.js --out-path=bin --targets=linux-x64,macos-x64,win-x64",
-    "postbundle": "ts-node scripts/rename-binaries.ts && ts-node scripts/archive-files"
+    "bundle": "npm run bundle:windows && npm run bundle:mac && npm run bundle:linux",
+    "bundle:windows": "cross-env nexe dist/app.js --output=./bin/khinsider-winx64 --target=win32-x64-22.16.0 --build",
+    "bundle:mac": "cross-env nexe dist/app.js --output=./bin/khinsider-winx64 --target=darwin-22.16.0 --build",
+    "bundle:linux": "cross-env nexe dist/app.js --output=./bin/khinsider-winx64 --target=linux-x64-22.16.0 --build",
+    "postbundle": "ts-node scripts/rename-binaries.ts && ts-node scripts/archive-files.ts"
   },
   "keywords": [
     "khinsider",
@@ -41,7 +44,7 @@
     "cross-env": "^7.0.3",
     "fast-glob": "^3.3.3",
     "jest": "^29.7.0",
-    "pkg": "^5.8.1",
+    "nexe": "^5.0.0-beta.4",
     "rimraf": "^6.0.1",
     "ts-jest": "^29.3.4",
     "typescript": "^5.8.3",

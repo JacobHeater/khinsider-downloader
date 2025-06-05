@@ -14,7 +14,7 @@ if (!options.paths) {
   process.exit(1);
 }
 
-const paths = options.paths.split(',').filter((p) => !!p.trim());
+const paths = options.paths.split(',').filter((p: string) => !!p.trim());
 
 if (!paths || paths.length === 0) {
   throw new Error('Did not get any directories.');

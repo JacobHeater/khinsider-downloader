@@ -1,4 +1,4 @@
-import glob from 'glob';
+import {glob} from 'glob';
 import { join, basename, dirname } from 'path';
 import process from 'process';
 import fs from 'fs-extra';
