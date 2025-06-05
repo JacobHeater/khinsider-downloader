@@ -34,7 +34,7 @@ jobs:
           npm run bundle
 
       - name: Publish
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: executables
           path: bin/downloader.zip
