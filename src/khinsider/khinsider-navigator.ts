@@ -9,6 +9,9 @@ import { isStringFalsey } from '../validation/string-validation';
 import { AlbumNotFoundError } from './album-not-found-error';
 import { KhInsiderDownloadData } from './khinsider-download-data';
 import { KhInsiderSong } from './khinsider-song';
+import { EventEmitter } from 'stream';
+import { EventNames } from './events/event-names';
+import { SongWriteToDiskEventArgs } from './events/event-args';
 
 export const BASE_URL: string = 'https://downloads.khinsider.com/game-soundtracks/album';
 
@@ -46,6 +49,8 @@ export class KhInsiderNavigator {
   private readonly downloadUrl: string;
   private readonly fileInterface: FileInterface;
 
+  public readonly songEvents: EventEmitter = new EventEmitter();
+
   /**
    * Downloads the album asynchronously from KHInsider.
    */
@@ -77,6 +82,11 @@ export class KhInsiderNavigator {
           download.song.getNameAsFormat(this.format),
           download.data
         );
+        this.songEvents.emit(EventNames.SongWriteToDisk, {
+          path: this.fileInterface.basePath,
+          fileName: download.song.getNameAsFormat(this.format),
+          format: this.format
+        } as SongWriteToDiskEventArgs);
         processedSongs++;
         logger.info(
           `${processedSongs} / ${albumSongMp3Urls.length} – "${download.song.getNameAsFormat(

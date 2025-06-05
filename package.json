@@ -4,7 +4,7 @@
   "description": "A utility for downloading media from khinsider.",
   "main": "bin/index.ts",
   "scripts": {
-    "test": "TEST_MODE=1 jest",
+    "test": "cross-env TEST_MODE=1 jest",
     "test:coverage": "npm test -- --coverage",
     "start": "ts-node src/app.ts",
     "clean": "ts-node scripts/rimraf-multi.ts -p=bin,coverage,dist,temp",
@@ -26,6 +26,8 @@
   "author": "Jacob Heater <jacobheater@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.27.1",
+    "@jest/globals": "^30.0.0-beta.3",
     "@types/archiver": "^6.0.3",
     "@types/download": "^8.0.5",
     "@types/fs-extra": "^11.0.4",
@@ -36,6 +38,7 @@
     "@types/uuid": "^10.0.0",
     "@types/yargs": "^17.0.33",
     "archiver": "^7.0.1",
+    "cross-env": "^7.0.3",
     "fast-glob": "^3.3.3",
     "jest": "^29.7.0",
     "pkg": "^5.8.1",
@@ -51,7 +54,6 @@
     "fs-extra": "^11.3.0",
     "jsdom": "^26.1.0",
     "ts-node": "^10.9.2",
-    "winston": "^3.17.0",
-    "yargs": "^18.0.0"
+    "winston": "^3.17.0"
   }
 }
