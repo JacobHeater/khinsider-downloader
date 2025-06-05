@@ -1,8 +1,9 @@
 import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { version } from './app-config.json';
 import { IS_TEST_MODE } from './env';
 
-export const argv = yargs
+export const argv = yargs(hideBin(process.argv))
   .version(`KH Insider Downloader v${version}.`)
   .option('album', {
     alias: 'a',
