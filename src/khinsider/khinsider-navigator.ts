@@ -1,4 +1,4 @@
-import download from 'download';
+import axios from 'axios';
 import { join } from 'path';
 
 import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
@@ -137,7 +137,8 @@ export class KhInsiderNavigator {
       if (parent) {
         try {
           const destinationUrl = (parent as HTMLAnchorElement).href;
-          const bytes = await download(destinationUrl);
+          const response = await axios.get(destinationUrl, { responseType: 'arraybuffer' });
+          const bytes = Buffer.from(response.data);
 
           logger.info(`Finished downloading "${song.name}."`);
 
