@@ -1,4 +1,5 @@
 import axios from 'axios';
+import os from 'os';
 import { join } from 'path';
 
 import { ArgumentInvalidError, ArgumentInvalidReason } from '../argument-invalid-error';
@@ -40,6 +41,7 @@ export class KhInsiderNavigator {
       throw new ArgumentInvalidError('format', ArgumentInvalidReason.InvalidFormat);
     }
 
+    outdir = KhInsiderNavigator.expandTildePath(outdir);
     outdir = join(outdir, albumName);
 
     this.downloadUrl = getKhInsiderAlbumUrl(albumName);
@@ -50,6 +52,10 @@ export class KhInsiderNavigator {
   private readonly fileInterface: FileInterface;
 
   public readonly songEvents: EventEmitter = new EventEmitter();
+
+  private static expandTildePath(path: string): string {
+    return path.replace(/^~(?=$|[\\/])/, os.homedir());
+  }
 
   /**
    * Downloads the album asynchronously from KHInsider.
@@ -137,7 +143,17 @@ export class KhInsiderNavigator {
       if (parent) {
         try {
           const destinationUrl = (parent as HTMLAnchorElement).href;
-          const response = await axios.get(destinationUrl, { responseType: 'arraybuffer' });
+          const response = await axios.get(destinationUrl, {
+            responseType: 'arraybuffer',
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+              Accept: '*/*',
+              'Accept-Language': 'en-US,en;q=0.9',
+              Referer: song.url,
+              Connection: 'keep-alive',
+            }
+          });
           const bytes = Buffer.from(response.data);
 
           logger.info(`Finished downloading "${song.name}."`);
@@ -154,7 +170,7 @@ export class KhInsiderNavigator {
     const pageDom = await this.getAlbumPageDomAsync();
 
     if (!pageDom) {
-      return [];
+      throw new AlbumNotFoundError(this.albumName);
     }
 
     const songList = pageDom.querySelector('#songlist');
