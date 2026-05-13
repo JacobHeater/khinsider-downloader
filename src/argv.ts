@@ -26,5 +26,9 @@ const logLevelOption = new Option(
   .default('info');
 program.addOption(logLevelOption);
 
+if (IS_TEST_MODE) {
+  program.allowUnknownOption(true);
+}
+
 const command = program.parse();
 export const argv = command.opts();
